@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -23,7 +24,7 @@ class Predictor:
         self.type = st.sidebar.selectbox("Algorithm", ("Classification", "Clustering"))
         if self.type == "Classification":
             self.chosen_classifier = st.sidebar.selectbox(
-                "Classification", ("Random Forest", "Logistic Regression")
+                "Type of Classifier", ("Random Forest", "Logistic Regression")
             )
             if self.chosen_classifier == "Random Forest":
                 self.n_trees = st.sidebar.slider("number of trees", 1, 1000, 1)
@@ -39,27 +40,37 @@ class Predictor:
         self.features = st.sidebar.multiselect(
             "Please choose your features", self.data.columns
         )
-        if self.type == "Classification":
-            self.target = st.sidebar.selectbox(
-                "Please choose your target variable",
-                [
-                    variable
-                    for variable in self.data.columns
-                    if variable not in self.features
-                ],
-            )
+        self.target = st.sidebar.selectbox(
+            "Please choose your target variable",
+            [
+                variable
+                for variable in self.data.columns
+                if variable not in self.features
+            ],
+        )
 
     # preprocess data
     def preprocess_data(self, test_size):
         X = self.data[self.features]
-        X = MinMaxScaler().fit_transform(X)
-        if self.type == "Classification":
-            y = self.data[self.target]
-            self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(
-                X, y, test_size=test_size
+        # X = MinMaxScaler().fit_transform(X)
+        y = self.data[self.target]
+        self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(
+            X, y, test_size=test_size
+        )
+
+    # plot some data
+    def plot_data(self):
+        cols = st.multiselect("Choose variables to see", self.data.columns)
+        if len(cols) > 1:
+            fig, ax = plt.subplots()
+            sns.scatterplot(
+                x=cols[0],
+                y=cols[1],
+                hue=self.target,
+                data=self.data,
+                ax=ax,
             )
-        elif self.type == "Clustering":
-            self.X = X
+            st.pyplot(fig)
 
     # make prediction
 
@@ -70,6 +81,7 @@ if __name__ == "__main__":
     if controller.data is not None:
         controller.select_algo()
         controller.set_features()
-    if controller.data is not None and len(controller.features) > 0:
+    if controller.data is not None and len(controller.features) > 1:
         test_size = st.sidebar.slider("Choose size (%) of test set", 1, 99, 33)
         controller.preprocess_data(test_size)
+        controller.plot_data()
