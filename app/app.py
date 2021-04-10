@@ -9,7 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MinMaxScaler
 
 
-class Predictor:
+class Predictor():
     # get data
     def get_data(self):
         file = st.sidebar.file_uploader("Choose file (CSV)", type="csv")
