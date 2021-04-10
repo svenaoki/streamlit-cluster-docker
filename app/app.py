@@ -17,7 +17,7 @@ class Predictor:
             self.data = pd.read_csv(file)
             return self.data
         else:
-            st.success("Please upload a CSV File")
+            st.error("Please upload a CSV File")
 
     # choose classifier
     def select_algo(self):
