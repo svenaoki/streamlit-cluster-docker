@@ -12,12 +12,12 @@ from sklearn.preprocessing import MinMaxScaler
 class Predictor():
     # get data
     def get_data(self):
-        file = st.sidebar.file_uploader("Choose file (CSV)", type="csv")
+        file = st.sidebar.file_uploader("Choose file (csv)", type="csv")
         if file is not None:
             self.data = pd.read_csv(file)
             return self.data
         else:
-            st.text("Please upload a CSV File")
+            st.success("Please upload a CSV File")
 
     # choose classifier
     def select_algo(self):
