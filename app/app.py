@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import MinMaxScaler
 
 
@@ -17,7 +18,7 @@ class Predictor:
             self.data = pd.read_csv(file)
             return self.data
         else:
-            st.error("Please upload a CSV File")
+            st.warning("Please upload a CSV File")
 
     # choose classifier
     def select_algo(self):
@@ -28,10 +29,12 @@ class Predictor:
             )
             if self.chosen_classifier == "Random Forest":
                 self.n_trees = st.sidebar.slider("number of trees", 1, 1000, 1)
+                self.algo = RandomForestClassifier(n_estimators = self.n_trees)
             elif self.chosen_classifier == "Logistic Regression":
                 self.max_iter = st.sidebar.slider(
                     "Choose maximum number of Iterations", 1, 50, 10
                 )
+                self.algo = LogisticRegression(max_iter = self.max_iter)
         if self.type == "Clustering":
             pass
 
@@ -73,6 +76,19 @@ class Predictor:
             st.pyplot(fig)
 
     # make prediction
+    def make_prediction(self):
+        try:
+            model = self.algo.fit(self.train_X, self.train_y)
+            predictions = model.predict(self.test_X)
+            df = pd.DataFrame(pd.np.column_stack([self.test_X, self.test_y, predictions]), columns=['Var1', 'Var2', 'True', 'Predictions'])
+            fig2, [ax1, ax2] = plt.subplots(2, 1, figsize = (13, 8))
+            sns.scatterplot(x="Var1", y="Var2", hue="True", data=df, ax=ax1)
+            sns.scatterplot(x="Var1", y="Var2", hue="Predictions", data=df, ax=ax2)
+            st.pyplot(fig2)
+        except AttributeError as e:
+            st.error("Choose algorithms, features, targets before attempting to predict.")
+        except ValueError as e:
+            st.error("Target variable right?")
 
 
 if __name__ == "__main__":
@@ -85,3 +101,5 @@ if __name__ == "__main__":
         test_size = st.sidebar.slider("Choose size (%) of test set", 1, 99, 33)
         controller.preprocess_data(test_size)
         controller.plot_data()
+        if st.button('Predictions'):
+            predictions = controller.make_prediction()
